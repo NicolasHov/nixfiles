@@ -102,6 +102,7 @@
     nix-direnv
     starship
     usbutils
+    tmate
   ];
   # nix-direnv options
   # nix options for derivations to persist garbage collection
