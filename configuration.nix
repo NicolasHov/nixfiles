@@ -58,6 +58,11 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
 
+  # Enable Fingerprint unlocking (it don't work)
+  services.fprintd.enable = true;
+  services.fprintd.tod.enable = true;
+  services.fprintd.tod.driver = pkgs.libfprint-2-tod1-goodix;
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nicolas = {
     isNormalUser = true;
