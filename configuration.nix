@@ -101,6 +101,7 @@
     direnv
     nix-direnv
     starship
+    usbutils
   ];
   # nix-direnv options
   # nix options for derivations to persist garbage collection
