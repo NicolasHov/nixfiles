@@ -6,7 +6,7 @@
 
 {
   imports = [ # Include the results of the hardware scan.
-   <nixos-hardware/lenovo/thinkpad/x270>
+    <nixos-hardware/lenovo/thinkpad/x270>
     ./hardware-configuration.nix
   ];
 
@@ -58,15 +58,19 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
 
-  # Enable Fingerprint unlocking (it don't work)
-  services.fprintd.enable = true;
+
+   # fingerprint reader: login and unlock with fingerprint (if you add one with `fprintd-enroll`)
   services.fprintd.tod.enable = true;
-  services.fprintd.tod.driver = pkgs.libfprint-2-tod1-goodix;
+  services.fprintd.tod.driver = pkgs.libfprint-2-tod1-vfs0090; #pkgs.callPackage ./python-validity { };
+  services.fprintd.enable = true;
+  security.pam.services.login.fprintAuth = true;
+  security.pam.services.xscreensaver.fprintAuth = true;
+  # similarly for other PAM providers
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nicolas = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "network-manager" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       firefox
       vscode
@@ -82,9 +86,9 @@
 
   # Fonts 
   fonts.fonts = with pkgs; [
-  fira-code
-  fira-code-symbols
-];
+    fira-code
+    fira-code-symbols
+  ];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -103,6 +107,7 @@
     starship
     usbutils
     tmate
+    emote
   ];
   # nix-direnv options
   # nix options for derivations to persist garbage collection
