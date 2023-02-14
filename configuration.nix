@@ -4,6 +4,14 @@
 
 { config, pkgs, ... }:
 
+let
+  # load custom packages for driving the fingerprint sensor.
+  # This probably conflicts with with the default fprintd, so do not enable services.fprintd
+  open-fprintd = (pkgs.callPackage ./packages/open-fprintd/default.nix {});
+  fprintd-clients = (pkgs.callPackage ./packages/fprintd-clients/default.nix {});
+  python-validity = (pkgs.callPackage ./packages/python-validity/default.nix {});
+ in
+
 {
   imports = [ # Include the results of the hardware scan.
     <nixos-hardware/lenovo/thinkpad/x270>
@@ -58,14 +66,42 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
 
+ # enable the tailscale service
+  services.tailscale.enable = true;
 
-   # fingerprint reader: login and unlock with fingerprint (if you add one with `fprintd-enroll`)
-  services.fprintd.tod.enable = true;
-  services.fprintd.tod.driver = pkgs.libfprint-2-tod1-vfs0090; #pkgs.callPackage ./python-validity { };
-  services.fprintd.enable = true;
-  security.pam.services.login.fprintAuth = true;
-  security.pam.services.xscreensaver.fprintAuth = true;
-  # similarly for other PAM providers
+  # ----Mouse Logitech-----
+   hardware.logitech.wireless.enable = true;
+   hardware.logitech.wireless.enableGraphical = true;
+  # ----End mouse Logitech-----
+
+
+
+  # ----Fingerprint support: TOFIX------:
+  # Enable services from custom packages
+  systemd.packages = [ open-fprintd python-validity ];
+  systemd.services.open-fprintd.enable = true;
+  systemd.services.python3-validity.enable = true;
+  
+  # enable fingerprint scanning for sudo
+  # security.pam.services.sudo.text = "";
+
+  # Account management.
+  #  account required pam_unix.so
+  
+  # Authentication management.
+  # auth sufficient pam_unix.so   likeauth try_first_pass nullok
+  # auth sufficient ${fprintd-clients}/lib/security/pam_fprintd.so
+    # auth sufficient ${nixos-138a-0097-fingerprint-sensor.localPackages.fprintd-clients}/lib/security/pam_fprintd.so
+  # auth required pam_deny.so
+  
+  # Password management.
+  # password sufficient pam_unix.so nullok sha512
+  
+  # Session management.
+  # session required pam_env.so conffile=/etc/pam/environment readenv=0
+  # session required pam_unix.so
+
+  # ----End fingerprint support------
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nicolas = {
@@ -81,6 +117,9 @@
       nodePackages.pnpm
       rustup
       klavaro
+      element-desktop
+      spotify-tui
+      # spotifyd # to fix
     ];
   };
 
@@ -108,6 +147,11 @@
     usbutils
     tmate
     emote
+    open-fprintd
+    fprintd-clients
+    python-validity
+    tailscale
+    ntfs3g
   ];
   # nix-direnv options
   # nix options for derivations to persist garbage collection
@@ -126,6 +170,12 @@
   # Add nix-command and flakes features 
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+ # temporarily allow all insecure packages
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-12.2.3" # used with etcher pkg
+  ];
+            
 
   # Enable zsh as default shell
   users.defaultUserShell = pkgs.zsh;
