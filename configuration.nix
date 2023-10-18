@@ -118,6 +118,7 @@ let
       rustup
       klavaro
       element-desktop
+      transmission
       spotify-tui
       # spotifyd # to fix
     ];
@@ -152,6 +153,7 @@ let
     python-validity
     tailscale
     ntfs3g
+    screen
   ];
   # nix-direnv options
   # nix options for derivations to persist garbage collection
@@ -174,11 +176,13 @@ let
  # temporarily allow all insecure packages
   nixpkgs.config.permittedInsecurePackages = [
     "electron-12.2.3" # used with etcher pkg
+    "openssl-1.1.1u" 
   ];
             
 
   # Enable zsh as default shell
   users.defaultUserShell = pkgs.zsh;
+ programs.zsh.enable = true;
 
   environment.sessionVariables.RUST_SRC_PATH =
     "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
@@ -198,9 +202,19 @@ let
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
-  networking.firewall.allowedUDPPorts = [ 41641 41852 ];
+  # networking.firewall.allowedUDPPorts = [ 41641 41852 ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
+  
+  # always allow traffic from your Tailscale network
+   networking.firewall.trustedInterfaces = [ "tailscale0" ];
+
+  # allow the Tailscale UDP port through the firewall
+   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
+
+  # allow you to SSH in over the public internet
+   networking.firewall.allowedTCPPorts = [ 22 ];
+
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
