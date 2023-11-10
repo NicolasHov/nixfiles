@@ -111,7 +111,6 @@ let
       firefox
       vscode
       signal-desktop
-      discord
       github-desktop
       nodejs
       nodePackages.pnpm
@@ -121,11 +120,12 @@ let
       transmission
       spotify-tui
       # spotifyd # to fix
+      discord
     ];
   };
 
   # Fonts 
-  fonts.fonts = with pkgs; [
+  fonts.packages = with pkgs; [
     fira-code
     fira-code-symbols
   ];
