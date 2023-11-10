@@ -5,11 +5,11 @@
 { config, pkgs, ... }:
 
 let
-  # load custom packages for driving the fingerprint sensor.
+  # FIXME: load custom packages for driving the fingerprint sensor.
   # This probably conflicts with with the default fprintd, so do not enable services.fprintd
-  open-fprintd = (pkgs.callPackage ./packages/open-fprintd/default.nix {});
-  fprintd-clients = (pkgs.callPackage ./packages/fprintd-clients/default.nix {});
-  python-validity = (pkgs.callPackage ./packages/python-validity/default.nix {});
+  #open-fprintd = (pkgs.callPackage ./packages/open-fprintd/default.nix {});
+  #fprintd-clients = (pkgs.callPackage ./packages/fprintd-clients/default.nix {});
+  #python-validity = (pkgs.callPackage ./packages/python-validity/default.nix {});
  in
 
 {
@@ -25,8 +25,7 @@ let
   networking.hostName = "X270"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable =
-    true; # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
   # Set your time zone.
   time.timeZone = "Europe/Brussels";
@@ -39,7 +38,7 @@ let
   i18n.defaultLocale = "en_US.UTF-8";
   console = { 
     font = "Lat2-Terminus16";
-    #    keyMap = "us";
+    # keyMap = "us";
     useXkbConfig = true; # use xkbOptions in tty.
   };
 
@@ -66,32 +65,30 @@ let
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
 
- # enable the tailscale service
+  # Enable the tailscale service
   services.tailscale.enable = true;
 
   # ----Mouse Logitech-----
-   hardware.logitech.wireless.enable = true;
-   hardware.logitech.wireless.enableGraphical = true;
+  hardware.logitech.wireless.enable = true;
+  hardware.logitech.wireless.enableGraphical = true;
   # ----End mouse Logitech-----
 
-
-
-  # ----Fingerprint support: TOFIX------:
+  # ----Fingerprint support: FIXME----:
   # Enable services from custom packages
-  systemd.packages = [ open-fprintd python-validity ];
-  systemd.services.open-fprintd.enable = true;
-  systemd.services.python3-validity.enable = true;
+  #systemd.packages = [ open-fprintd python-validity ];
+  #systemd.services.open-fprintd.enable = true;
+  #systemd.services.python3-validity.enable = true;
   
   # enable fingerprint scanning for sudo
   # security.pam.services.sudo.text = "";
 
   # Account management.
-  #  account required pam_unix.so
+  # account required pam_unix.so
   
   # Authentication management.
   # auth sufficient pam_unix.so   likeauth try_first_pass nullok
   # auth sufficient ${fprintd-clients}/lib/security/pam_fprintd.so
-    # auth sufficient ${nixos-138a-0097-fingerprint-sensor.localPackages.fprintd-clients}/lib/security/pam_fprintd.so
+  # auth sufficient ${nixos-138a-0097-fingerprint-sensor.localPackages.fprintd-clients}/lib/security/pam_fprintd.so
   # auth required pam_deny.so
   
   # Password management.
@@ -118,8 +115,6 @@ let
       klavaro
       element-desktop
       transmission
-      spotify-tui
-      # spotifyd # to fix
       discord
     ];
   };
@@ -148,9 +143,9 @@ let
     usbutils
     tmate
     emote
-    open-fprintd
-    fprintd-clients
-    python-validity
+    #open-fprintd
+    #fprintd-clients
+    #python-validity
     tailscale
     ntfs3g
     screen
@@ -162,27 +157,20 @@ let
     keep-derivations = true;
   };
   environment.pathsToLink = [ "/share/nix-direnv" ];
-  # if you also want support for flakes
-  nixpkgs.overlays = [
-    (self: super: {
-      nix-direnv = super.nix-direnv.override { enableFlakes = true; };
-    })
-  ];
 
   # Add nix-command and flakes features 
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
- # temporarily allow all insecure packages
+  # Temporarily allow all insecure packages
   nixpkgs.config.permittedInsecurePackages = [
     "electron-12.2.3" # used with etcher pkg
     "openssl-1.1.1u" 
   ];
-            
 
   # Enable zsh as default shell
   users.defaultUserShell = pkgs.zsh;
- programs.zsh.enable = true;
+  programs.zsh.enable = true;
 
   environment.sessionVariables.RUST_SRC_PATH =
     "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
@@ -203,18 +191,13 @@ let
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ 41641 41852 ];
-  # Or disable the firewall altogether.
   networking.firewall.enable = true;
-  
   # always allow traffic from your Tailscale network
-   networking.firewall.trustedInterfaces = [ "tailscale0" ];
-
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
   # allow the Tailscale UDP port through the firewall
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
-
+  networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
   # allow you to SSH in over the public internet
-   networking.firewall.allowedTCPPorts = [ 22 ];
-
+  networking.firewall.allowedTCPPorts = [ 22 ];
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
@@ -230,4 +213,3 @@ let
   system.stateVersion = "22.11"; # Did you read the comment?
 
 }
-
